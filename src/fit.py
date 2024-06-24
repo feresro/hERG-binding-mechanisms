@@ -42,15 +42,30 @@ if base_model == 'lei':
 else:
     model_str = f'{base_model}-m{args.model}'
 
-#protocol = '../protocols/protocol-Milnes.csv'
-protocol = '../protocols/protocol-Milnes.mmt'
-times = np.arange(0, 15e3, 10)
+#protocol = '../protocols/protocol-Milnes.csv' # {Modified by Fer to include three protocols
+#protocol = '../protocols/protocol-P0.mmt'
+#protocols = ['../protocols/protocol-P0.mmt',
+#             '../protocols/protocol-P40.mmt',
+#             '../protocols/protocol-P80.mmt']
+protocols = ['../protocols/protocol-P40.mmt',
+             '../protocols/protocol-P80.mmt']
+#protocolsIDs = ['P0', 'P40', 'P80']
+protocolsIDs = ['P40', 'P80']
+times = np.arange(0, 6e3, 0.5)
 # Get time window where V = 0 mV
 #p = np.loadtxt(protocol, delimiter=',', skiprows=1)
 #win = p[:, 0][np.abs(p[:, 1] - 0) < 1e-5] * 1e3  # s -> ms
 #win = (times >= win[0]) & (times < win[-1])
 #win = (times >= 1e3) & (times < 10.9e3)
-win = (times >= 1.1e3) & (times < 11e3)
+#win = (times >= 5.106e3) & (times < 5.2955e3)
+#win1 = (times >= 5.106e3) & (times < 5.2955e3)
+win2 = (times >= 5.106e3) & (times < 5.2955e3)
+win3 = (times >= 0.606e3) & (times < 0.7955e3)
+#wins = [win1, win2, win3]
+
+#win1 = (times >= 0.200e3) & (times < 5.0995e3)
+#win3 = (times >= 0.200e3) & (times < 0.5995e3)
+wins = [win2, win3] # Modified by Fer to include three protocols}
 
 filename = os.path.join(results, f'{drug_str}-{model_str}')
 print('=' * 79)
@@ -93,6 +108,8 @@ class ConcatMilnesModel(pints.ForwardModel):
                 out = np.append(out, after[self._win] / self._before)
         except:  # TODO?
             out = np.ones(times.shape) * float('inf')
+        #print(len(out))
+        #print(len(times))
         assert(len(out) == len(times))
         return out
 
@@ -101,45 +118,46 @@ class ConcatMilnesModel(pints.ForwardModel):
 weights = []
 errors = []
 concs = parameters.drug_concs[drug_str]
-for conc in concs:
+for protocol, win, protocolsID in zip(protocols, wins, protocolsIDs): # Modified by Fer to include three protocols
+    for conc in concs:
 
-    # Create forward models
-    model = ConcatMilnesModel(
-        model_str,
-        protocol,
-        times,
-        win,
-        conc
-    )
+        # Create forward models
+        model = ConcatMilnesModel(
+            model_str,
+            protocol,
+            times,
+            win,
+            conc
+        )
 
-    # Load data
-    u = np.loadtxt(
-        f'../data/Milnes-data/drug-{drug_str}-conc-{conc}-Milnes.csv',
-        delimiter=',',
-        skiprows=1
-    )
-    concat_time = u[:, 0]
-    concat_milnes = u[:, 1]
+        # Load data
+        u = np.loadtxt(
+            f'../data/Fer/drug-{drug_str}-conc-{conc}-{protocolsID}.csv',#f'../data/Milnes-data/drug-{drug_str}-conc-{conc}-Milnes.csv', # Modified by Fer to include three protocols
+            delimiter=',',
+            skiprows=1
+        )
+        concat_time = u[:, 0]
+        concat_milnes = u[:, 1]
 
-    # Create single output problem
-    problem = pints.SingleOutputProblem(model, concat_time, concat_milnes)
+        # Create single output problem
+        problem = pints.SingleOutputProblem(model, concat_time, concat_milnes)
 
-    # Define error function
-    errors.append(pints.RootMeanSquaredError(problem))
+        # Define error function
+        errors.append(pints.RootMeanSquaredError(problem))
 
-    # Add weighting based on range
-    weights.append(1 / len(concs))
+        # Add weighting based on range
+        weights.append(1 / len(concs))
 
-    # Debug
-    debug = False
-    if debug:
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(concat_time, concat_milnes)
-        p = parameters.binding[model_str][drug_str]
-        plt.plot(concat_time, model.simulate(p, concat_time))
-        plt.show()
-        sys.exit()
+        # Debug
+        debug = False
+        if debug:
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot(concat_time, concat_milnes)
+            p = parameters.binding[model_str][drug_str]
+            plt.plot(concat_time, model.simulate(p, concat_time))
+            plt.show()
+            sys.exit()
 
 # Create weighted sum of errors
 f = pints.SumOfErrors(errors, weights)
