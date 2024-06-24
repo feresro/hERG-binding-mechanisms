@@ -1,7 +1,7 @@
 [[model]]
 author: Myokit CellML 1 API
-name: Lei_2019_37C_IKr_Model12
-desc: "Lei et al. 2019 physiological model with Li et al. 2017 binding model."
+name: Lei_2019_37C_IKr_Model13
+desc: "Lei et al. 2019 physiological model with modified Li et al. 2017 binding model."
 # Initial values
 ikr.O = 0
 ikr.I = 0
@@ -24,32 +24,32 @@ k2 = p3 * exp(-p4 * V)
 k3 = p5 * exp(p6 * V)
 k4 = p7 * exp(-p8 * V)
 
-p1 =  0.0765e-3 [mS/uF]
+p1 =  2.06469371000000002e-3 [mS/uF]
     in [mS/uF]
-p2 =  9.05e-2 [1/mV]
+p2 =  7.17061645999999969e-2 [1/mV]
     in [1/mV]
-p3 =  2.84e-5 [mS/uF]
+p3 =  3.44186256999999990e-5 [mS/uF]
     in [mS/uF]
-p4 =  4.74e-2 [1/mV]
+p4 =  6.17661788000000017e-2 [1/mV]
     in [1/mV]
-p5 =  1.03e-1 [mS/uF]
+p5 =  4.17809103000000015e-1 [mS/uF]
     in [mS/uF]
-p6 =  2.13e-2 [1/mV]
+p6 =  2.57733544000000002e-2 [1/mV]
     in [1/mV]
-p7 =  0.801e-2 [mS/uF]
+p7 =  4.75152440999999995e-2 [mS/uF]
     in [mS/uF]
-p8 =  2.96e-2 [1/mV]
+p8 =  2.50856877999999991e-2 [1/mV]
     in [1/mV]
-p9 = 31 [nS]
-    in [nS]
+p9 = 0.1524 [uS]
+    in [uS]
     oxmeta: membrane_rapid_delayed_rectifier_potassium_current_conductance
 
-dot(O) = ku * OD - ku * emax * O + k1 * C + k4 * I - (k2 + k3) * O
-dot(I) = psi * ID - ku * emax * I + k1 * CI + k3 * O - (k2 + k4) * I
+dot(O) = ku * OD - emax * O + k1 * C + k4 * I - (k2 + k3) * O
+dot(I) = psi * ID - emax * I + k1 * CI + k3 * O - (k2 + k4) * I
 dot(CI) = k2 * I + k3 * C - (k1 + k4) * CI
-dot(OD) = ku * emax * O + kt * X * CD - (ku + kt) * OD
+dot(OD) = emax * O + kt * X * CD - (ku + kt) * OD
 dot(CD) = kt * OD + kt * ID - (kt * X + kt * X) * CD
-dot(ID) = ku * emax * I + kt * X * CD - (psi + kt) * ID
+dot(ID) = emax * I + kt * X * CD - (psi + kt) * ID
 dot(C) = - k3 * C + k4 * CI - k1 * C + k2 * O
 #C = 1 - O - I - CI - OD - ID - CD
 
@@ -57,14 +57,13 @@ dot(C) = - k3 * C + k4 * CI - k1 * C + k2 * O
 D = 0
     in [nM]
 
-emax = kmax * D ^ hill / (D ^ hill + halfmax)
+emax = kforward * D ^ hill
 X = 1 / (1 + exp(-(V + vhalf) / 6.789))
 psi = ku * k3 / k4
 
-kmax = 5
+kforward = 1e-03 * 5 / 0.15 # ku * kmax / EC50^n
 ku = 1e-03
 hill = 1
-halfmax = 0.15 # EC50^hill
 vhalf = 8
 kt = 3.5e-05 #fixed
 

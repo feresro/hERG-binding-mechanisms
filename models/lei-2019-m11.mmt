@@ -24,24 +24,24 @@ k2 = p3 * exp(-p4 * V)
 k3 = p5 * exp(p6 * V)
 k4 = p7 * exp(-p8 * V)
 
-p1 =  2.06469371000000002e-3 [mS/uF]
+p1 =  0.0765e-3 [mS/uF]
     in [mS/uF]
-p2 =  7.17061645999999969e-2 [1/mV]
+p2 =  9.05e-2 [1/mV]
     in [1/mV]
-p3 =  3.44186256999999990e-5 [mS/uF]
+p3 =  2.84e-5 [mS/uF]
     in [mS/uF]
-p4 =  6.17661788000000017e-2 [1/mV]
+p4 =  4.74e-2 [1/mV]
     in [1/mV]
-p5 =  4.17809103000000015e-1 [mS/uF]
+p5 =  1.03e-1 [mS/uF]
     in [mS/uF]
-p6 =  2.57733544000000002e-2 [1/mV]
+p6 =  2.13e-2 [1/mV]
     in [1/mV]
-p7 =  4.75152440999999995e-2 [mS/uF]
+p7 =  0.801e-2 [mS/uF]
     in [mS/uF]
-p8 =  2.50856877999999991e-2 [1/mV]
+p8 =  2.96e-2 [1/mV]
     in [1/mV]
-p9 = 0.1524 [uS]
-    in [uS]
+p9 = 31 [nS]
+    in [nS]
     oxmeta: membrane_rapid_delayed_rectifier_potassium_current_conductance
 
 dot(O) = koff * iOD + k1 * C + k4 * I - (k2 + k3 + kon * (D ^ hill)) * O
